@@ -6,7 +6,7 @@
 # ]
 # ///
 """
-TTS voiceover generator for the `remotion-from-hn` workflow.
+TTS voiceover generator for the `remotion-idea-to-video` workflow.
 
 Invoked by the `generate-audio` node. Reads narration JSON produced by
 `plan-video`, calls the configured TTS provider (Cartesia or ElevenLabs),

@@ -7,7 +7,7 @@
 # ]
 # ///
 """
-Sound-effects generator for the `remotion-from-hn` workflow.
+Sound-effects generator for the `remotion-idea-to-video` workflow.
 
 Generates a small, fixed set of editorial SFX via ElevenLabs Sound Generation:
   - intro_whoosh    (fires at composition start, scene1)

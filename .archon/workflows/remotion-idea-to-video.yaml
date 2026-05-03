@@ -1,15 +1,18 @@
-name: remotion-from-hn
+name: remotion-idea-to-video
 description: |
   Generate a short Remotion video from a source URL and add it to the repo's
   persistent Remotion library. Every run drops a new composition under
   `src/<Slug>/` and audio under `public/<media>/<Slug>/`, so Studio opened
   against the repo shows every video ever generated, side by side.
 
-  Three modes, selected via `$ARGUMENTS`:
+  Four modes, selected via `$ARGUMENTS`:
     "hn"                            — auto-pick today's top HN front-page story
     "hn <url>" | "article <url>"    — treat the given URL as an article
     "marketing <url>"               — treat the given URL as a product/brand
                                       and build a pitch video
+    "idea <free-form prompt>"       — describe the topic/idea in plain English
+                                      and build an explainer video from it
+                                      (no URL, no fetch — your prompt IS the brief)
 
   hn/article mode: video is ABOUT THE ARTICLE'S IDEAS. No references to HN
   metadata (points, comments, platform) or to the source publication.
@@ -17,6 +20,12 @@ description: |
   marketing mode: video PITCHES the product. Hook on the problem it solves,
   scenes 2–4 showcase benefits, final scene is a CTA pointing at the URL or
   domain. Enthusiastic but factual — no fabricated features or testimonials.
+
+  idea mode: video is ABOUT THE TOPIC THE USER DESCRIBED. The prompt text
+  itself is the brief — no URL is fetched. No CTA unless the prompt asks
+  for one. Don't fabricate specifics (numbers, products, testimonials)
+  beyond what the prompt implies. Don't reference the user, "the prompt",
+  or "the request" on screen — make the video, not commentary on it.
 
   Requires the `remotion-best-practices` skill
   (`npx skills add remotion-dev/skills --yes`). The `visual-diagrams` skill
@@ -88,21 +97,31 @@ nodes:
 
       Raw `$ARGUMENTS` passed by the user: "$ARGUMENTS"
 
-      Format: `<mode> [url]`
-        mode = `hn` | `article` | `marketing`  (default: `hn`)
-        url  = optional URL. Required for `marketing`. Optional for `hn`
-               (if omitted, auto-pick today's top HN front-page story).
+      Format: `<mode> [url-or-prompt-text]`
+        mode = `hn` | `article` | `marketing` | `idea`   (default: `hn`)
+        For `hn`         : optional URL (auto-pick HN top story if omitted).
+        For `article`    : URL is required.
+        For `marketing`  : URL is required.
+        For `idea`       : everything after the `idea` token is treated as
+                           a free-form plain-English prompt — NOT a URL.
+                           No fetching. The prompt IS the brief.
         `article` is a synonym for `hn` when a URL is explicitly given —
         both yield an article-style explainer video.
 
       Parsing rules:
       - Empty or whitespace-only ARGUMENTS → `mode=hn`, no URL.
       - If the first whitespace-separated token is `hn` / `article` /
-        `marketing`, that is the mode. Otherwise treat the first token as
-        an error (print FATAL and exit).
-      - Second token, if present, is the URL. It MUST look like `http(s)://...`
-        Reject anything else with a FATAL message.
-      - `marketing` without a URL is a FATAL error.
+        `marketing` / `idea`, that is the mode. Otherwise treat the first
+        token as an error (print FATAL and exit).
+      - For `hn` / `article` / `marketing`: the second token, if present,
+        is the URL. It MUST look like `http(s)://...`. Reject anything
+        else with a FATAL message. `marketing` without a URL is FATAL.
+        `article` without a URL is FATAL.
+      - For `idea`: the rest of the line (everything after the `idea`
+        token, with leading whitespace trimmed) is the prompt. It must
+        be non-empty (FATAL otherwise). The prompt may contain spaces,
+        URLs, or any text — pass it through verbatim. Do NOT WebFetch
+        anything in idea mode.
 
       ── Steps by mode ──────────────────────────────────────────────────
 
@@ -130,25 +149,46 @@ nodes:
          - Tone / vibe of the site (technical / playful / enterprise / etc.)
          `source_type` = `marketing_site`.
 
+      4. **idea**: NO WebFetch. The user's prompt is the brief. Do this:
+         - Generate a punchy, neutral, ≤ 60-character `title` from the
+           prompt. Title-case. No quotes, no trailing punctuation. Examples:
+             prompt = "vector databases vs traditional databases for ML"
+               → title = "Vector Databases vs Traditional Databases"
+             prompt = "explain how oauth pkce works for backend engineers"
+               → title = "How OAuth PKCE Works"
+         - `url` = `""` (empty string).
+         - `source_type` = `user_idea`.
+         - `article-body.md` content: write the user's prompt verbatim
+           as the first line, then a section `## What the user wants`
+           with 2–4 bullets capturing your interpretation of the topic
+           scope, implied audience, and depth (e.g. "Audience: backend
+           engineers familiar with HTTP", "Depth: conceptual, not a
+           tutorial"). Do NOT invent specific numbers, products, or
+           claims that aren't in the prompt. If the prompt is vague,
+           keep the bullets vague — let `plan-video` decide angles.
+
       ── Artifacts to write ─────────────────────────────────────────────
 
       1. `$ARTIFACTS_DIR/article.json` — exact schema:
 
              {
-               "mode": "hn" | "article" | "marketing",
+               "mode": "hn" | "article" | "marketing" | "idea",
                "title": "<string>",
                "url": "<string or empty>",
-               "source_type": "hn_algolia" | "article_url" | "marketing_site"
+               "source_type": "hn_algolia" | "article_url" | "marketing_site" | "user_idea"
              }
 
          Keep it exactly these four top-level fields. Downstream nodes
          (music script, summarize, archive) read `title` and `url`.
+         For `idea` mode, `url` is `""`.
 
       2. `$ARTIFACTS_DIR/article-body.md` — plain text or markdown.
          - For hn/article: the extracted article content, cleaned up.
          - For marketing: the structured brief described above, with
            clear section headers (Product, Positioning, Value, Features,
            CTA, Tone).
+         - For idea: the verbatim user prompt + a short `## What the
+           user wants` interpretation as described in step 4 above.
 
       Then emit your final message as a JSON object matching the output
       schema (mode, title, url, source_type). Downstream nodes read this
@@ -158,14 +198,14 @@ nodes:
       properties:
         mode:
           type: string
-          enum: [hn, article, marketing]
+          enum: [hn, article, marketing, idea]
         title:
           type: string
         url:
           type: string
         source_type:
           type: string
-          enum: [hn_algolia, article_url, marketing_site]
+          enum: [hn_algolia, article_url, marketing_site, user_idea]
       required: [mode, title, url, source_type]
     depends_on: [check-skill]
     idle_timeout: 300000
@@ -184,7 +224,7 @@ nodes:
         | cut -c1-48)
 
       if [ -z "$COMP_ID" ] || ! printf '%s' "$COMP_ID" | grep -qE '^[A-Za-z]'; then
-        COMP_ID="HnStory$(date +%s)"
+        COMP_ID="Story$(date +%s)"
       fi
 
       FS_SLUG=$(printf '%s' "$TITLE" \
@@ -192,7 +232,7 @@ nodes:
         | LC_ALL=C sed -E 's/[^a-z0-9]+/-/g' \
         | LC_ALL=C sed -E 's/^-+|-+$//g' \
         | cut -c1-64)
-      [ -z "$FS_SLUG" ] && FS_SLUG="hn-story-$(date +%s)"
+      [ -z "$FS_SLUG" ] && FS_SLUG="story-$(date +%s)"
 
       DATE=$(date +%Y-%m-%d)
 
@@ -329,9 +369,9 @@ nodes:
       $fetch-source.output
 
       Source fields are authoritative:
-      - `mode` — `hn` | `article` | `marketing` (drives the planning rules below)
-      - `title` — subject / product name
-      - `url` — source URL
+      - `mode` — `hn` | `article` | `marketing` | `idea` (drives the planning rules below)
+      - `title` — subject / product name / topic
+      - `url` — source URL (empty string for `idea` mode)
       - `source_type` — provenance tag
 
       Full body is already on disk at `$ARTIFACTS_DIR/article-body.md`. Read
@@ -422,6 +462,33 @@ nodes:
       - Tone: enthusiastic but factual. No "game-changer", "revolutionary",
         "unbelievable". Specificity beats superlatives.
 
+      ### mode = `idea`
+
+      The video is ABOUT THE TOPIC the user described in their prompt
+      (now in `article-body.md`). Treat it as an explainer driven by the
+      prompt's wording.
+
+      - Narration explains the concepts/ideas the prompt asks about.
+      - Hook angle: the most surprising, counter-intuitive, or
+        curiosity-spiking framing of the topic the prompt names.
+      - **Do NOT fabricate specifics.** Numbers, percentages, named
+        products, testimonials, study citations, or product names that
+        aren't implied by the prompt are out. If the prompt is broad
+        ("how vector dbs work"), use generally accepted concepts; if it
+        names specifics ("how Pinecone scales to 1B vectors"), respect
+        them. When in doubt, stay conceptual.
+      - **Do NOT reference the user, the prompt, or the request itself.**
+        No "as you asked", "in this video we'll cover", "the topic you
+        described". Make the video, not commentary on it.
+      - **No CTA** unless the prompt explicitly asks for one (e.g. "make
+        it a pitch for X" or "end with a call to subscribe"). Default
+        ending is a takeaway, an open question, or a one-line summary.
+      - Tone follows what the prompt suggests. Default to neutral,
+        clear, educational. If the prompt says "fun" / "snappy" / "for
+        beginners" / "deep technical", honor that.
+      - Length: same 30–60s target as other modes. Pick depth accordingly
+        — don't try to cover everything if the topic is broad.
+
       ── Diagram decision (all modes) ────────────────────────────────────
 
       Decide whether any scene benefits from a diagram component from the
@@ -462,9 +529,9 @@ nodes:
 
           # Video Plan
 
-          **Mode:** hn | article | marketing
+          **Mode:** hn | article | marketing | idea
           **Subject:** <title>
-          **URL:** <url>
+          **URL:** <url, or "(idea-mode)" if mode=idea>
           **Composition ID:** <composition_id from slug.json>  (1920x1080 @ 30fps)
           **Silent target duration:** <N>s
           **Uses diagrams:** yes | no
@@ -604,7 +671,7 @@ nodes:
 
       First, detect all the flags (audio layers, diagram flag, source mode):
 
-          MODE=$(jq -r '.mode' "$ARTIFACTS_DIR/article.json")      # hn | article | marketing
+          MODE=$(jq -r '.mode' "$ARTIFACTS_DIR/article.json")      # hn | article | marketing | idea
           [ -f "$ARTIFACTS_DIR/audio/voice-manifest.json" ] && VOICED=true  || VOICED=false
           [ -f "$ARTIFACTS_DIR/audio/music-manifest.json" ] && MUSIC=true   || MUSIC=false
           [ -f "$ARTIFACTS_DIR/audio/sfx-manifest.json"   ] && SFX=true     || SFX=false
@@ -684,6 +751,23 @@ nodes:
       7f. **No source-page references.** Don't say "as seen on their
           homepage" / "according to their docs". The product is the subject,
           not the page.
+
+      When MODE is `idea`:
+      7g. **No prompt / user / meta references.** Nothing in narration or
+          on-screen text should say "the prompt", "as you asked", "in this
+          video we'll cover", "the topic you described", or otherwise
+          reference the user-as-author. HIGH-severity if violated.
+      7h. **No fabricated specifics.** Concrete numbers, percentages,
+          named products, named studies, testimonials, or usage stats
+          that are NOT present or directly implied in
+          `$ARTIFACTS_DIR/article-body.md` (which contains the user's
+          verbatim prompt) are HIGH-severity.
+      7i. **Topical coherence.** Every scene must advance the topic the
+          prompt named. Off-topic detours or padding scenes are
+          MED-severity.
+      7j. **No CTA** unless the prompt explicitly requested one. A "Visit
+          X" / "Try Y" / "Subscribe" final scene that has no support in
+          the prompt is MED-severity.
 
       Voiced-mode checks (when VOICED=true):
       8. Every scene in voice-manifest has a matching `<Audio>` with the
@@ -828,7 +912,15 @@ nodes:
         printf '# Video archive\n\n| Date | Title | URL | Verdict | Folder |\n|---|---|---|---|---|\n' > "$INDEX"
       fi
       TITLE=$(jq -r '.title' "$ARTIFACTS_DIR/article.json")
-      URL=$(jq -r '.url // "(Ask HN)"' "$ARTIFACTS_DIR/article.json")
+      URL=$(jq -r '.url // ""' "$ARTIFACTS_DIR/article.json")
+      MODE=$(jq -r '.mode' "$ARTIFACTS_DIR/article.json")
+      if [ -z "$URL" ]; then
+        case "$MODE" in
+          idea) URL="(idea)" ;;
+          hn)   URL="(Ask HN)" ;;
+          *)    URL="-" ;;
+        esac
+      fi
       DATE=$(jq -r '.date' "$ARTIFACTS_DIR/slug.json")
       VERDICT="$qa-review.output.verdict"
       TITLE_SAFE=$(printf '%s' "$TITLE" | sed 's/|/\\|/g')

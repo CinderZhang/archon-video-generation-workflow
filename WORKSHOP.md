@@ -8,7 +8,7 @@
 
 ## What we built
 
-A single Archon workflow, `remotion-from-hn`, that takes a URL and produces a polished ~40-second Remotion video from it — voiced, with sound effects, optionally with music, rendered to mp4, and archived in-repo alongside every past run.
+A single Archon workflow, `remotion-idea-to-video`, that takes a URL and produces a polished ~40-second Remotion video from it — voiced, with sound effects, optionally with music, rendered to mp4, and archived in-repo alongside every past run.
 
 Three live examples now live in the repo under `./videos/`:
 
@@ -128,7 +128,7 @@ The interesting workshop material isn't the happy path. It's the friction. Here 
 
 **Fix in code**: added `rm -rf "$TMP/_project/.git" "$TMP/_project/.gitignore" "$TMP/_project/README.md"` before the copy, so the scaffold never touches host-curated files.
 
-**Fix locally**: `git init`, `remote add`, `fetch`, set HEAD to `feat/remotion-from-hn-v2` — working tree preserved.
+**Fix locally**: `git init`, `remote add`, `fetch`, set HEAD to `feat/remotion-idea-to-video-v2` — working tree preserved.
 
 **Takeaway**: When merging a generated tree into a user's repo, never `cp -R .` blindly. Enumerate the files you want to preserve explicitly. And always push your branch *before* a destructive operation — origin is your undo button.
 
@@ -196,7 +196,7 @@ The meta-skill was **the `archon` skill itself** — that's what told me to trea
 4. **Separate timing from mapping.** This came from the Remotion skill but applies broadly to DAG design. One node computes "how long" (`fetch-source` → duration); downstream nodes compute "how to display". Don't braid them.
 5. **Treat prompts as contracts, not vibes.** Before our animation-quality pass, prompts had vibes: *"dynamic entrance motion"*, *"use best practices"*. After, they have named rules: *`premountFor={fps}` on every Sequence*, *`Easing.bezier(0.16, 1, 0.3, 1)` for enter motions*. Rules survive model regressions. Vibes don't.
 6. **Persistence via repo, ephemera via `$ARTIFACTS_DIR`.** We use Archon's artifacts dir for *this run's* state (plan, narration, findings). We use the repo for *the library* (accumulated compositions, committed audio assets if desired). That boundary makes the "iterate on an old video" workflow we sketched for v6 trivial to add.
-7. **Write the workflow you'd want to run on a fresh clone.** The final PR removed every workflow-output file from the working tree before merge. Someone cloning the repo and running `archon workflow run remotion-from-hn --no-worktree "marketing https://their-site.com"` will bootstrap the whole Remotion project + produce a video with no manual setup. That is the showcase.
+7. **Write the workflow you'd want to run on a fresh clone.** The final PR removed every workflow-output file from the working tree before merge. Someone cloning the repo and running `archon workflow run remotion-idea-to-video --no-worktree "marketing https://their-site.com"` will bootstrap the whole Remotion project + produce a video with no manual setup. That is the showcase.
 
 ---
 
@@ -205,7 +205,7 @@ The meta-skill was **the `archon` skill itself** — that's what told me to trea
 ```
 .archon/
 ├── workflows/
-│   └── remotion-from-hn.yaml           # 15-node DAG, 3 modes, opt-in audio
+│   └── remotion-idea-to-video.yaml     # 15-node DAG, 3 modes, opt-in audio
 ├── commands/
 │   ├── remotion-build-composition.md   # builder contract + animation rules
 │   └── remotion-iterate.md             # fixer contract (scoped)
