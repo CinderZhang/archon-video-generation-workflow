@@ -50,9 +50,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _audio_common import load_project_env, read_brand_yaml  # noqa: E402
 
 
-INTRO_PROMPT = "Short whoosh transition, clean tech-editorial, rising pitch"
-OUTRO_PROMPT = "Short outro stinger, clean editorial close, descending"
-TRANSITION_PROMPT = "Short subtle tick or pop, editorial scene transition, clean"
+INTRO_PROMPT = "Futuristic digital power-up, AI system initializing, rising electronic swoosh, punchy and energetic"
+OUTRO_PROMPT = "Satisfying digital completion chime, workflow success, clean futuristic resolution, uplifting"
+TRANSITION_PROMPT = "Quick digital swoosh, fast data transfer sound, sharp and modern, energetic scene cut"
 
 
 def resolve_provider() -> str:

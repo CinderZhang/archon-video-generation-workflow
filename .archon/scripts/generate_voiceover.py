@@ -129,9 +129,10 @@ def synthesize_elevenlabs(text: str, out_path: Path) -> None:
         "text": text,
         "model_id": model_id,
         "voice_settings": {
-            "stability": 0.5,
-            "similarity_boost": 0.75,
-            "style": 0.3,
+            "stability": float(os.environ.get("ELEVENLABS_STABILITY", "0.5")),
+            "similarity_boost": float(os.environ.get("ELEVENLABS_SIMILARITY", "0.8")),
+            "style": float(os.environ.get("ELEVENLABS_STYLE", "0.25")),
+            "speed": float(os.environ.get("ELEVENLABS_SPEED", "1.0")),
         },
     }
 
