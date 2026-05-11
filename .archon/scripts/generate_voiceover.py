@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -170,7 +171,9 @@ def main() -> None:
     load_project_env(Path.cwd())
 
     provider = resolve_provider()
-    if provider == "none":
+    supplied_dir = artifacts_dir / "voiceover-supplied"
+    has_supplied = supplied_dir.is_dir() and any(supplied_dir.glob("*.mp3"))
+    if provider == "none" and not has_supplied:
         print("Voice: not configured — skipping voiceover generation (silent video).")
         print("To enable: set CARTESIA_API_KEY or ELEVENLABS_API_KEY in .archon/.env")
         return
@@ -207,12 +210,18 @@ def main() -> None:
             sys.exit(f"FATAL: scene {scene_id!r} has empty narration text")
 
         out_path = out_dir / f"{scene_id}.mp3"
-        print(f"  → {scene_id}: synthesizing ({len(text)} chars)")
 
-        if provider == "cartesia":
-            synthesize_cartesia(text, out_path)
+        supplied_path = artifacts_dir / "voiceover-supplied" / f"{scene_id}.mp3"
+        if supplied_path.exists():
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(supplied_path, out_path)
+            print(f"[generate_voiceover] using supplied audio for {scene_id}: {supplied_path}")
         else:
-            synthesize_elevenlabs(text, out_path)
+            print(f"  → {scene_id}: synthesizing ({len(text)} chars)")
+            if provider == "cartesia":
+                synthesize_cartesia(text, out_path)
+            else:
+                synthesize_elevenlabs(text, out_path)
 
         duration_s = measure_duration_seconds(out_path)
         duration_frames = round(duration_s * fps)
