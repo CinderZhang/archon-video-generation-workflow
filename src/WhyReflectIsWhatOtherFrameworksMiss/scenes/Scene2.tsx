@@ -138,27 +138,46 @@ const NodeCell: React.FC<{ node: Node; pulseAt?: number }> = ({
   );
 };
 
-const RoleLabel: React.FC<{
-  text: string;
-  color: string;
+// 80/20 ratio chip rendered beneath each section of the bracket.
+const RatioBadge: React.FC<{
+  human: number;
+  ai: number;
   startSec: number;
-  marginLeft?: number;
-}> = ({ text, color, startSec, marginLeft }) => {
+  emphasis: "human" | "ai";
+}> = ({ human, ai, startSec, emphasis }) => {
   const enter = useEnter(startSec, 0.5);
   const opacity = enter;
+  const translateY = interpolate(enter, [0, 1], [10, 0]);
+  const humanColor = COLORS.green;
+  const aiColor = COLORS.blue;
+  const borderColor = emphasis === "human" ? humanColor : aiColor;
   return (
     <div
       style={{
         opacity,
-        color,
-        fontSize: 14,
+        transform: `translateY(${translateY}px)`,
+        marginTop: 6,
+        background: `${borderColor}10`,
+        border: `1px solid ${borderColor}80`,
+        borderRadius: 6,
+        padding: "4px 10px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+        fontSize: 13,
         fontWeight: 700,
-        letterSpacing: "0.24em",
-        textTransform: "uppercase",
-        marginLeft: marginLeft ?? 0,
+        letterSpacing: "0.04em",
+        whiteSpace: "nowrap",
       }}
     >
-      {text}
+      <span style={{ color: humanColor, opacity: emphasis === "human" ? 1 : 0.55 }}>
+        {human}% HUMAN
+      </span>
+      <span style={{ color: COLORS.textMuted, opacity: 0.7 }}>/</span>
+      <span style={{ color: aiColor, opacity: emphasis === "ai" ? 1 : 0.55 }}>
+        {ai}% AI
+      </span>
     </div>
   );
 };
@@ -173,17 +192,17 @@ const CHIPS: Chip[] = [
   {
     label: "Compression",
     caption: "Explaining reveals the gaps.",
-    startSec: 14.5,
+    startSec: 24.2,
   },
   {
     label: "Audience Pressure",
     caption: "Speaking blocks fluency-faking.",
-    startSec: 16.0,
+    startSec: 25.2,
   },
   {
     label: "Linearization",
     caption: "Speech forces causal reasoning.",
-    startSec: 17.5,
+    startSec: 26.2,
   },
 ];
 
@@ -232,7 +251,7 @@ const ChipPill: React.FC<{ chip: Chip }> = ({ chip }) => {
 };
 
 const Karpathy: React.FC = () => {
-  const enter = useEnter(28.0, 1.4);
+  const enter = useEnter(28.5, 1.2);
   const opacity = enter;
   const translateY = interpolate(enter, [0, 1], [16, 0]);
   return (
@@ -314,7 +333,7 @@ const Headline: React.FC = () => {
           letterSpacing: "-0.012em",
         }}
       >
-        Reflect proves you understood.
+        The ratio flips at the edges.
       </div>
     </div>
   );
@@ -399,25 +418,25 @@ export const Scene2: React.FC = () => {
           <NodeCell node={lastNode} pulseAt={6.2} />
         </div>
 
-        {/* Role labels under the diagram */}
+        {/* 80/20 ratio badges anchored beneath the bracket sections */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 0,
-            marginTop: 4,
+            marginTop: 12,
             width: "100%",
           }}
         >
-          <div style={{ width: 200, textAlign: "center" }}>
-            <RoleLabel text="Yours" color={COLORS.green} startSec={4.0} />
+          <div style={{ width: 320, display: "flex", justifyContent: "center" }}>
+            <RatioBadge human={80} ai={20} emphasis="human" startSec={17.0} />
           </div>
-          <div style={{ flex: 0 }}>
-            <RoleLabel text="Machine" color={COLORS.blue} startSec={4.4} />
+          <div style={{ flex: 0, padding: "0 12px" }}>
+            <RatioBadge human={20} ai={80} emphasis="ai" startSec={4.0} />
           </div>
-          <div style={{ width: 200, textAlign: "center" }}>
-            <RoleLabel text="Yours" color={COLORS.green} startSec={5.6} />
+          <div style={{ width: 320, display: "flex", justifyContent: "center" }}>
+            <RatioBadge human={80} ai={20} emphasis="human" startSec={19.0} />
           </div>
         </div>
 

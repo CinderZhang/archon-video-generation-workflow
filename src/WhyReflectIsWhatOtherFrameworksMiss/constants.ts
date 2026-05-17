@@ -30,14 +30,16 @@ export const VOICE_PATHS = {
 // Per-scene durations in frames (rounded from ElevenLabs manifest at 30fps).
 // Using static constants keeps calculateMetadata pure and avoids requiring
 // async audio probing in the renderer.
+// rev1 (2026-05-17): scene2 + scene3 re-narrated for 80/20 framing
+// and DRIVER AI brand pivot.
 export const SCENE_FRAMES = {
   scene1: 894,  // 29.8057s
-  scene2: 1147, // 38.2171s
-  scene3: 515,  // 17.1624s
+  scene2: 1056, // 35.1869s (rev1)
+  scene3: 683,  // 22.7527s (rev1)
 } as const;
 
 export const TOTAL_FRAMES =
-  SCENE_FRAMES.scene1 + SCENE_FRAMES.scene2 + SCENE_FRAMES.scene3; // 2556
+  SCENE_FRAMES.scene1 + SCENE_FRAMES.scene2 + SCENE_FRAMES.scene3; // 2633
 
 // Canonical enter easing (per remotion-best-practices skill)
 export const ENTER_EASING = [0.16, 1, 0.3, 1] as const;

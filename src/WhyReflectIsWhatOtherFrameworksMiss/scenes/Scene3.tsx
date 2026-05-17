@@ -128,26 +128,65 @@ const Subtitle: React.FC = () => {
       >
         Reflect — the only assessment that survives an AI age.
       </div>
+    </div>
+  );
+};
+
+// Brand line — DRIVER AI primary; Purdue as credibility ballast only.
+const BrandLine: React.FC = () => {
+  const enter = useEnter(11.0, 0.9);
+  const opacity = enter;
+  const translateY = interpolate(enter, [0, 1], [10, 0]);
+  return (
+    <div
+      style={{
+        opacity,
+        transform: `translateY(${translateY}px)`,
+        marginTop: 22,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          color: COLORS.green,
+          fontSize: 22,
+          fontWeight: 800,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+        }}
+      >
+        From DRIVER AI
+      </div>
+      <div
+        style={{
+          color: COLORS.textSecondary,
+          fontSize: 18,
+          fontWeight: 500,
+          letterSpacing: "0.04em",
+          marginTop: 8,
+        }}
+      >
+        The operating system for working with AI.
+      </div>
       <div
         style={{
           color: COLORS.textMuted,
-          fontSize: 18,
+          fontSize: 14,
           fontWeight: 500,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
           marginTop: 14,
         }}
       >
-        Purdue Daniels School of Business
-        <span style={{ margin: "0 12px", color: COLORS.gold }}>·</span>
-        First AI Working Competency Course
+        Battle-tested with 300+ students at Purdue
       </div>
     </div>
   );
 };
 
 const CTA: React.FC = () => {
-  const enter = useEnter(7.4, 0.8);
+  const enter = useEnter(17.6, 0.8);
   const opacity = enter;
   return (
     <div
@@ -184,7 +223,7 @@ const CTA: React.FC = () => {
 };
 
 const QrPlaceholder: React.FC = () => {
-  const enter = useEnter(8.5, 0.8);
+  const enter = useEnter(18.4, 0.8);
   const opacity = enter * 0.85;
   return (
     <div
@@ -296,6 +335,7 @@ export const Scene3: React.FC = () => {
       >
         <Wordmark />
         <Subtitle />
+        <BrandLine />
       </div>
       <CTA />
       <QrPlaceholder />
