@@ -160,17 +160,6 @@ const BrandLine: React.FC = () => {
       </div>
       <div
         style={{
-          color: COLORS.textSecondary,
-          fontSize: 18,
-          fontWeight: 500,
-          letterSpacing: "0.04em",
-          marginTop: 8,
-        }}
-      >
-        The operating system for working with AI.
-      </div>
-      <div
-        style={{
           color: COLORS.textMuted,
           fontSize: 14,
           fontWeight: 500,
@@ -186,7 +175,7 @@ const BrandLine: React.FC = () => {
 };
 
 const CTA: React.FC = () => {
-  const enter = useEnter(17.6, 0.8);
+  const enter = useEnter(13.0, 0.8);
   const opacity = enter;
   return (
     <div
@@ -223,7 +212,7 @@ const CTA: React.FC = () => {
 };
 
 const QrPlaceholder: React.FC = () => {
-  const enter = useEnter(18.4, 0.8);
+  const enter = useEnter(13.8, 0.8);
   const opacity = enter * 0.85;
   return (
     <div

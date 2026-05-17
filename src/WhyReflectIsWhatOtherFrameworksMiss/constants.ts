@@ -32,10 +32,11 @@ export const VOICE_PATHS = {
 // async audio probing in the renderer.
 // rev1 (2026-05-17): scene2 + scene3 re-narrated for 80/20 framing
 // and DRIVER AI brand pivot.
+// rev2 (2026-05-17): scene3 trimmed — dropped 'operating system' tagline.
 export const SCENE_FRAMES = {
   scene1: 894,  // 29.8057s
   scene2: 1056, // 35.1869s (rev1)
-  scene3: 683,  // 22.7527s (rev1)
+  scene3: 559,  // 18.6224s (rev2 — trimmed)
 } as const;
 
 export const TOTAL_FRAMES =
