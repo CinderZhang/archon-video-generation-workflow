@@ -13,10 +13,12 @@ type CompMeta = {
   calculateMetadata?: any;
 };
 
+import aidoesntmakepeoplestupid_meta from './AIDoesntMakePeopleStupid';
 import whatisdriver_meta from './WhatIsDriver';
 import whyreflectiswhatotherframeworksmiss_meta from './WhyReflectIsWhatOtherFrameworksMiss';
 
 const entries: CompMeta[] = [
+  aidoesntmakepeoplestupid_meta,
   whatisdriver_meta,
   whyreflectiswhatotherframeworksmiss_meta,
 ];
