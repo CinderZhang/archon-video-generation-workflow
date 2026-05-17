@@ -14,13 +14,19 @@ type CompMeta = {
 };
 
 import aidoesntmakepeoplestupid_meta from './AIDoesntMakePeopleStupid';
+import aidoesntmakepeoplestupidshort_meta from './AIDoesntMakePeopleStupidShort';
 import whatisdriver_meta from './WhatIsDriver';
+import whatisdrivershort_meta from './WhatIsDriverShort';
 import whyreflectiswhatotherframeworksmiss_meta from './WhyReflectIsWhatOtherFrameworksMiss';
+import whyreflectshort_meta from './WhyReflectShort';
 
 const entries: CompMeta[] = [
   aidoesntmakepeoplestupid_meta,
+  aidoesntmakepeoplestupidshort_meta,
   whatisdriver_meta,
+  whatisdrivershort_meta,
   whyreflectiswhatotherframeworksmiss_meta,
+  whyreflectshort_meta,
 ];
 
 export default entries;
