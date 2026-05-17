@@ -13,9 +13,11 @@ type CompMeta = {
   calculateMetadata?: any;
 };
 
+import whatisdriver_meta from './WhatIsDriver';
 import whyreflectiswhatotherframeworksmiss_meta from './WhyReflectIsWhatOtherFrameworksMiss';
 
 const entries: CompMeta[] = [
+  whatisdriver_meta,
   whyreflectiswhatotherframeworksmiss_meta,
 ];
 
